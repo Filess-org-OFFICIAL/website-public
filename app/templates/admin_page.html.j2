@@ -1,0 +1,28 @@
+{% extends "layout.html.j2" %}
+
+{% set title = 'Admin' %}
+
+{% block content %}
+    <div style="padding: 1rem;">
+        <div style="text-align:left;">
+            <h7>User ID, Email, Custom tag, Date created, MB used</h7>
+            <span style="float:right;">
+                <h7>Total storage: {{storage//1000000}}MB</h7><br>
+            </span><br>
+            <h7>&emsp;&emsp;&emsp;File name, File type, Date created</h7>
+            <span style="float:right;">
+                <h7>Total file count: {{files}}</h7>
+            </span>
+        </div>
+        <br><hr>
+
+        {% for user, userFile in data %}
+            <p style="font-weight: 150;">{{user.userId}},&ensp;{{user.email}},&ensp;{{user.customTag}},&ensp;{{user.dateCreated}},&ensp;{{user.totalSize//1000000}}</p>
+            {% for file_info in userFile %}
+                <p style="font-weight: 80;">&emsp;&emsp;&emsp;{{file_info.fileName}},&ensp;{{file_info.fileType}},&ensp;{{file_info.dateCreated}},&ensp;{{file_info.tag}}</p>
+            {% endfor %}
+            <hr>
+        {% endfor %}
+        <a href="/dashboard">Back to dashboard</a>
+    </div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "layout.html.j2" %}
+
+{% set title = 'Sign up' %}
+
+{% block content %}
+    <div class="modal modal-signin d-block" style="background-color: transparent !important" tabindex="-1" role="dialog" id="modalSignin">
+        <div class="modal-dialog modal-dialog-centered" style="background-color: transparent !important" role="document">
+            <div class="modal-content no-border" style="background-color: transparent !important">
+                <div class="modal-header p-5 pb-4 border-bottom-0">
+                    <h2 class="mb-0">Sign up.</h2>
+                </div>
+
+                <div class="modal-body p-5 pt-0">
+                    <form action="{{ request.full_path }}" method="post">
+
+                    <div class="form-group">
+                        <input name="email" class="form-control filess-textbox mb-3 no-border" placeholder="Your email">
+                    </div>
+                    <div class="form-group">
+                        <input name="fname" class="form-control filess-textbox mb-3 no-border" placeholder="First name">
+                    </div>
+                    <div class="form-group">
+                        <input name="lname" class="form-control filess-textbox mb-3 no-border" placeholder="Last name">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password" class="form-control filess-textbox mb-3 no-border" placeholder="Password">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password2" class="form-control filess-textbox mb-3 no-border" placeholder="Re-enter password">
+                    </div>
+
+                    <button class="w-100 mb-2 btn btn-lg rounded-4 filess-button" type="submit">Sign up</button>
+
+                    <div>
+                        <hr/>
+                        <p style="font-weight: 300;">Have an account? <a href="/login" class="filess-link">Log in!</a></p>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

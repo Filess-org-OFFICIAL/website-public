@@ -1,0 +1,22 @@
+{% extends "layout.html.j2" %}
+
+{% set title = 'Verify' %}
+
+{% block content %}
+    <div class="modal modal-signin d-block" style="background-color: transparent !important" tabindex="-1" role="dialog" id="modalReset">
+        <div class="modal-dialog modal-dialog-centered" style="background-color: transparent !important" role="document">
+            <div class="modal-content no-border" style="background-color: transparent !important">
+                <div class="modal-body p-5 pt-0">
+                    <div class="form-group">
+                        <input type="number" id="code" class="form-control filess-textbox no-border" placeholder="Please enter the code sent to your email"/>
+                    </div>
+                    <button class="w-100 btn btn-lg rounded-4 filess-button" type="submit" onclick="verify('{{data}}')">Verify</button>
+                    <div>
+                        <hr/>
+                        <p style="font-weight: 300;"><a href="/signup" class="filess-link">Back to signup</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

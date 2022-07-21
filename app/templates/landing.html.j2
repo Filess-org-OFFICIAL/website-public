@@ -1,0 +1,240 @@
+{% extends "layout.html.j2" %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:400,600" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='landing/css/style.css') }}">
+<script src="https://unpkg.com/animejs@3.0.1/lib/anime.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div id="content" style="padding: 10px 25px 0px">
+        <nav class="nav" style="flex-wrap: nowrap;">
+            <ul class="navbar-nav" style="margin-right:auto;">
+                <li class="nav-item">
+                    <a onclick="location.href='/dashboard';">
+                        <img src="static/images/filess.png" style="width: 115px; margin-top: 20px; cursor: pointer;"/>
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav" style="margin-left:auto;">
+                <li class="nav-item">
+                    <button class="btn-nav rounded-4 filess-button" onclick="document.getElementById('fileid').click();" style="font-size: 12px; padding: 4px 14px; text-transform: none;">Upload</button>
+                    <button class="btn-nav rounded-4 filess-button" onclick="location.href='{{ url_for('signup') }}';" style="margin: 20px 20px 5px 15px; font-size: 12px; padding: 4px 14px; text-transform: none;">Sign&nbsp;up</button>
+                    <form action="/" method="POST" enctype="multipart/form-data">
+                        <input id="fileid" type="file" name="file" onchange="form.submit()" hidden/>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+        <div class="container" style="margin-top: 50px;">
+            <h3 style="text-align:center">Welcome to Filess</h3>
+            <p style="text-align:center">Asset sharing in the cloud made <b>you</b></p>
+        </div>
+
+        <section class="features section">
+            <div class="container">
+                <div class="features-inner section-inner" style="padding-bottom: 0px !important;">
+                    <div class="features-wrap">
+                        <div class="feature text-center is-revealing">
+                            <div class="feature-inner">
+                                <div class="feature-icon">
+                                    <img src="static/landing/images/feature-icon-01.svg" alt="Feature 01">
+                                </div>
+                                <h4 class="feature-title mt-24">Fast</h4>
+                                <p class="text-sm mb-0">Uploading files has never been faster. Filess offers immediate URL generation and quick upload speeds to get your files shared ASAP.</p>
+                            </div>
+                        </div>
+                        <div class="feature text-center is-revealing">
+                            <div class="feature-inner">
+                                <div class="feature-icon">
+                                    <img src="static/landing/images/feature-icon-02.svg" alt="Feature 02">
+                                </div>
+                                <h4 class="feature-title mt-24">Custom</h4>
+                                <p class="text-sm mb-0">In the age of individuality Filess thrives, providing features such as personal URL tagging and unique subdomains. This allows you to establish your identity and keep your assets organized.</p>
+                            </div>
+                        </div>
+                        <div class="feature text-center is-revealing">
+                            <div class="feature-inner">
+                                <div class="feature-icon">
+                                    <img src="static/landing/images/feature-icon-03.svg" alt="Feature 03">
+                                </div>
+                                <h4 class="feature-title mt-24">Simple</h4>
+                                <p class="text-sm mb-0">A simple and elegant design to enhance your user experience.</p>
+                            </div>
+                        </div>
+                    </div>
+                    {# <div class="row has-bottom-divider" style="padding: 1rem 0 2rem 0">
+                        <div class="col-auto" style="padding: 6px 0px; font-family: 'Overpass', sans-serif">
+                            Demo Link:
+                        </div>
+                        <div class="col" style="padding-right: 0px;">
+                            <input name="search" id="fileUrl" class="form-control filess-textbox no-border" style="height: 38px !important; font-size: 13px; padding: 3px 15px;" placeholder="URL" value="https://custom_subdomain.filess.org/demo_tag/filess.png">
+                        </div>
+                        <div class="col-auto">
+                            <button id="fileCopy" class="btn rounded-4 filess-button" style="font-size: 12px; padding: 9px 14px; text-transform: none; margin-top: 0px;" data-toggle="tooltip" data-placement="top" title="Copied!" onmouseout="outFunc()">
+                                Copy
+                            </button>
+                        </div>
+                    </div> #}
+                    <div class="has-bottom-divider" style="padding: 1rem 0 2rem 0">
+                        <div style="padding-right: 0px;">
+                            <input class="form-control filess-textbox no-border" style="height: 38px !important; font-size: 13px; padding: 3px 15px;" placeholder="URL" value="https://subdomain.filess.org/tag/filess.png">
+                        </div>
+                        <div class="row" style="padding: 1rem 0 2rem 0">
+                            <div class="col-auto" style="padding: 0 0px 0 2rem; font-family: 'Overpass', sans-serif">
+                                <i class="bi bi-arrow-90deg-up"></i>
+                            </div>
+                            <div class="col" style="padding-right: 0px; padding-top: 5px">
+                                <p>Demo link: customizable URLs</p>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {# <section class="mbr-section--bg-adapted mbr-section--relative" id="pricing-table1-3" data-rv-view="0">
+            <div class="pricing" id="pricing" style="padding-top: 0px !important; padding-bottom: 40px;">
+                <div class="pricing_container">
+                    <div class="section-head-lite pricing_text-center pricing_col-md-8 pricing_col-md-offset-2 space80">
+                        <h1 class="mbr-title-font">Get started in the Cloud</h1>
+                        <p>AWS cloud storage for all your static files, all in one place, all for one price</p>
+                    </div>
+                    <div class="pricing_row pricing1">
+                        <div class="pricing_col-md-12">
+
+                            <!-- Pricing Plan - 1 -->
+                            <div class="pricing_col-sm-3 price-styles" style="display: block;">
+                                <div class="pricing__item price-four-el" data-hover="">
+                                    <h3 class="pricing__title mbr-title-font mbr-primary-color">TIER 1</h3>
+                                    <p class="pricing__sentence">A great introduction to Filess</p>
+                                    <div class="pricing__price mbr-title-font">
+                                        <span class="pricing__currency">$</span>
+                                        <span>0.00</span>
+                                        <span class="pricing__period">/ month</span>
+                                    </div>
+                                    <div>
+                                        <ul class="pricing__feature-list mbr-text-font">
+                                            <li class="pricing__feature">100 MB storage</li>
+                                            <li class="pricing__feature">Custom tags</li>
+                                            <li class="pricing__feature">Basic sharing</li>
+                                        </ul>
+                                    </div>
+                                    <div><a href="#Coming_soon" class="btn mbr-title-font btn-primary" style="background-color: #4caf50;">Sign Up</a></div>
+                                </div>
+                            </div>
+
+                            <!-- Pricing Plan - 2 -->
+                            <div class="pricing_col-sm-3 price-styles" style="display: block;">
+                                <div class="pricing__item price-four-el">
+                                    <h3 class="pricing__title mbr-title-font mbr-primary-color">TIER 2</h3>
+                                    <p class="pricing__sentence">More you</p>
+                                    <div class="pricing__price mbr-title-font">
+                                        <span class="pricing__currency">$</span>
+                                        <span>1.99</span>
+                                        <span class="pricing__period">/ month</span>
+                                    </div>
+                                    <div>
+                                        <ul class="pricing__feature-list mbr-text-font">
+                                            <li class="pricing__feature">500 MB storage</li>
+                                            <li class="pricing__feature">Custom tags</li>
+                                            <li class="pricing__feature">More space</li>
+                                        </ul>
+                                    </div>
+                                    <div><button id="tier2_signup" class="btn mbr-title-font btn-primary is-primary" style="background-color: #4caf50;">Sign Up</button></div>
+                                </div>
+                            </div>
+
+                            <!-- Pricing Plan - 3 -->
+                            <div class="pricing_col-sm-3 price-styles" data-hover="BEST VALUE" style="display: block;"><div class="popular mbr-title-font price-four-el"><strong>BEST VALUE</strong></div>
+                                <div class="pricing__item pricing__item__popular price-four-el">
+
+                                    <h3 class="pricing__title mbr-title-font mbr-primary-color">TIER 3</h3>
+                                    <p class="pricing__sentence">Even more you</p>
+                                    <div class="pricing__price mbr-title-font">
+                                        <span class="pricing__currency">$</span>
+                                        <span>6.99</span>
+                                        <span class="pricing__period">/ month</span>
+                                    </div>
+                                    <div>
+                                        <ul class="pricing__feature-list mbr-text-font">
+                                            <li class="pricing__feature">5 GB storage</li>
+                                            <li class="pricing__feature">Custom tags</li>
+                                            <li class="pricing__feature">Unlimited subdomains</li>
+                                        </ul>
+                                    </div>
+                                    <div><a id="tier3_signup" class="btn mbr-title-font btn-primary" style="background-color: #4caf50;">Sign Up</a></div>
+                                </div>
+                            </div>
+
+                             <!-- Pricing Plan - 4 -->
+                            <div class="pricing_col-sm-3 price-styles" style="display: block;">
+                                <div class="pricing__item price-four-el">
+                                    <h3 class="pricing__title mbr-title-font mbr-primary-color">TIER 4</h3>
+                                    <p class="pricing__sentence">Absolutely humongous storage space</p>
+                                    <div class="pricing__price mbr-title-font">
+                                        <span class="pricing__currency">$</span>
+                                        <span>14.99</span>
+                                        <span class="pricing__period">/ month</span>
+                                    </div>
+                                    <div>
+                                        <ul class="pricing__feature-list mbr-text-font">
+                                            <li class="pricing__feature">50 GB of space</li>
+                                            <li class="pricing__feature">Custom tags</li>
+                                            <li class="pricing__feature">Unlimited subdomains</li>
+                                        </ul>
+                                    </div>
+                                    <div><a id="tier4_signup" class="btn mbr-title-font btn-primary" style="background-color: #4caf50;">Sign Up</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section> #}
+        <footer class="site-footer">
+            <div class="site-footer-inner">
+                <div class="footer-copyright" style="padding: 0rem 4rem;">&copy; 2022 Filess, all rights reserved</div>
+                <ul class="footer-links list-reset" style="padding: 0rem 4rem;">
+
+                    <li>
+                        <a href="https://mailto:filess.org@gmail.com">Contact (filess.org@gmail.com)</a>
+                    </li>
+                    <li>
+                        <a href="/">Landing</a>
+                    </li>
+                    <li>
+                        <a href="/login">Login</a>
+                    </li>
+                    <li>
+                        <a href="/signup">Signup</a>
+                    </li>
+                </ul>
+            </div>
+        </footer>
+    </div>
+    {% if url %}
+        <div class="modal fade show d-block" style="">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content" style="background-color:#32323d;">
+                    <div class="modal-header border-bottom-0">
+                        <button type="button" class="btn-close btn-close-white" onclick="location.href='/';"></button>
+                    </div>
+                    <div class="row" style="padding: 0px 20px;">
+                                                <p>Note: This link will expire in 30 days, to gain indefinite access to files and customization, create a free account!</p>
+                        <div class="col">
+                            <p>
+                                <input id="fileUrl" class="form-control filess-textbox no-border" style="height: 38px !important; font-size: 13px; padding: 3px 15px;" placeholder="URL" value="{{url}}">
+                            </p>
+                        </div>
+                        <div class="col-auto">
+                            <button id="fileCopy" class="btn rounded-4 filess-button" style="font-size: 12px; padding: 9px 14px; text-transform: none; margin-top: 0px;" data-toggle="tooltip" data-placement="top" title="Copied!" onmouseout="outFunc()" onclick="navigator.clipboard.writeText(document.getElementById("fileUrl").select().setSelectionRange(0, 99999).value);">
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop show" style="opacity: 0.5 !important;">
+        </div>
+    {% endif %}
+{% endblock %}

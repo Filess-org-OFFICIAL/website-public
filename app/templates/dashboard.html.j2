@@ -1,0 +1,457 @@
+{% extends "layout.html.j2" %}
+
+{% set title = 'Dashboard' %}
+
+{% block content %}
+        <!-- Page Content  -->
+	  	<div id="content" style="padding: 10px 25px 0px">
+	  	    <nav class="nav" style="flex-wrap: nowrap;">
+                <ul class="navbar-nav" style="margin-right:auto;">
+                    <li class="nav-item">
+                        <a onclick="location.href='/dashboard';">
+                            <img src="static/images/filess.png" style="width: 115px; margin-top: 20px; cursor: pointer;"/>
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav" style="margin-left:auto;">
+                    <li class="nav-item">
+                        <button class=" btn-nav rounded-4 filess-button" onclick="location.href='{{ url_for('logout') }}';" style="margin: 20px; font-size: 12px; padding: 10px 14px; text-transform: none;">Sign&nbsp;out</button>
+                    </li>
+                </ul>
+            </nav>
+            <div class="container" style="margin-top: 50px;">
+                <div id="alertPlaceholder"></div>
+                    <div class="row">
+                        <div class="col" style="padding-right: 0px;">
+                            <input name="search" id="dashSearch" onkeyup="dashboardSearch()" class="form-control filess-textbox mb-3 no-border" placeholder="Find a file">
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" style="padding: 1px;  border-color: transparent;" class="btn rounded-3" onclick="document.getElementById('fileid').click();">
+                                <img src="static/images/light-plus.png" class="btn-primary" style="width: 100%; background-color: transparent; border-color: transparent;" alt="Upload"/>
+                            </button>
+                        </div>
+                    </div>
+                    <form method="POST" id="searchForm" enctype="multipart/form-data">
+                        <input id='fileid' type='file' name="file" hidden/>
+                        <input id="uploadFileId" type="submit" hidden/>
+                    </form>
+                    {% if assets|length %}
+                    <div class="row">
+                        <div class="col">
+                            <table class="table table-hover" id="dashTable" style="border-color: transparent; height: 40.5px; background-color: #272731; border-radius: 5px; border-collapse: collapse; overflow: hidden; font-size: 16px; color: #99999f; font-weight: 400;">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="padding-left: 20px; font-weight: 500; vertical-align: middle;">Name</th>
+                                        <th id="dateModifiedHeader" scope="col" style="font-weight: 500; vertical-align: middle;">Date Modified</th>
+                                        <th id="sizeHeader" scope="col" style="font-weight: 500; vertical-align: middle;">Size</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="border-color: transparent; background-color: #393945; border-radius: 5px;">
+                                    {% for asset in assets %}
+                                        <tr data-toggle="modal" data-target="#editFileModal" data-userid="{{ asset.userId }}" data-filename="{{ asset.fileName }}" data-fileid="{{ asset.fileId }}" data-type="{{ asset.fileType }}" data-date="{{ (asset.dateCreated | datetime_filter).strftime('%B %d, %Y') }}" data-subdomain="{{ user.subdomain }}" data-tag="{{ asset.tag }}">
+                                            <td class="filess-table-row">
+                                                {% if asset.fileType == "image" %}
+                                                    <i class="bi bi-image-fill" style="margin-right: 5px;"></i>
+                                                {% elif asset.fileType == "video" %}
+                                                    <i class="bi bi-play-btn-fill" style="margin-right: 5px;"></i>
+                                                {% endif %}
+                                                <p class="filess-table-element-name">{{ asset.fileName }}</p>
+                                            </td>
+                                            <td class="dateUpdatedContent" style="vertical-align: middle; color: #7a7a82;">{{ (asset.dateUpdated | datetime_filter).strftime('%Y-%m-%d') }}</td>
+                                            <td class="sizeContent" style="vertical-align: middle; color: #7a7a82;">{{ bytes_convert(asset.fileBytes) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="modal fade" id="editFileModal" tabindex="-1" role="dialog" aria-labelledby="editFileModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div id="editFileModalContent" class="modal-content" style="background-color: #32323e;">
+                                <div id="editModalAlertPlaceholder"></div>
+                                <div class="modal-header border-bottom-0 d-block">
+                                    <div class="d-flex">
+                                        <h5 class="modal-title" style="font-family: 'Overpass', sans-serif; color: #99999f; " id="modalFileName"></h5>
+                                        <a id="editFileNameButton" style="padding: 3px 8px; color: #99999f; cursor: pointer;">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <div id="editFileForm" style="display: none;  background-color: transparent;">
+                                            <div class="border" style="font-weight: 500; color: #99999f; display: flex; padding: 0px 5px; border-color: #40424f !important; border-width: 1px !important; border-radius: 4px;">
+                                                <input id="editFileName" class="filess-textbox no-border" type="text" style="font-size: 1.25rem; background-color: transparent; padding: 0px; display: inline-block; min-width: 7px; border-radius: 4px;" onkeyup="Expand(this)">
+                                                <p id="editFileFormType" style="font-size: 1rem; margin:auto;"></p> <!-- IMPORTANT VARIABLE KEEPER -->
+                                            </div>
+                                            <a id="confirmEditButton" style="cursor: pointer; margin: auto;">  <!-- keep href for cursor hover indication, UX choice -->
+                                                <i class="bi bi-check2" style="color: #99999f; padding: 5px; margin-left: 5px; font-size: 20px;"></i>
+                                            </a>
+                                            <a id="rejectEditButton" style="cursor: pointer; margin: auto;">  <!-- keep href for cursor hover indication, UX choice -->
+                                                <i class="bi bi-x-lg" style="color: #99999f; padding: 5px; margin-left: 5px; font-size: 17px; margin: auto;"></i>
+                                            </a>
+                                        </div>
+                                        <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <h6 id="dateTime" class="modal-title" style="color: #99999f; font-weight: 400;"></h5>
+                                </div>
+                                <div class="modal-body">
+
+                                    <div class="row">
+                                        <a id="thumbnailLink" style="width: 150px; margin-left: auto; margin-right: auto;">
+                                            <img id="thumbnail" class="border" style="border-color: #40424f !important; border-width: 5px !important; width: 150px; padding-left: 0px; padding-right: 0px; margin-right: auto; margin-left: auto; display: block; ">
+                                        </a>
+                                        <video id="videoContainer" width="250" controls="" name="media" class="border" style="border-color: #40424f !important; border-width: 5px !important; padding-left: 0px; padding-right: 0px; margin-right: auto; margin-left: auto; display: block; ">
+                                            <source id="videoSource">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </div>
+                                    <br/>
+                                    <div class="row">
+                                        <div class="col" style="padding-right: 0px;">
+                                            <input name="search" id="fileUrl" class="form-control filess-textbox no-border" style="height: 38px !important; font-size: 13px; padding: 3px 15px;" placeholder="Exit and reenter this file to change tag">
+                                        </div>
+                                        <div class="col-auto">
+                                            <button id="fileCopy" class="btn rounded-4 filess-button" style="font-size: 12px; padding: 9px 14px; text-transform: none; margin-top: 0px;" data-toggle="tooltip" data-placement="top" title="Copied!" onmouseout="outFunc()">
+                                                Copy
+                                            </button>
+                                            <a id="deleteFileButton" style="cursor: pointer">  <!-- keep href for cursor hover indication, UX choice -->
+                                                <i class="bi bi-trash3" style="color: #99999f; padding: 9px; margin-left: 5px; font-size: 17px;"></i>
+                                            </a>
+                                            <!-- <a id="downloadLink" style="cursor: pointer">
+                                                <i class="bi bi-cloud-download" style="color: #99999f; padding: 9px; margin-left: 5px; font-size: 17px;"></i>
+                                            </a> -->
+                                        </div>
+                                    </div>
+									<hr>
+									<div class="row" style="width: 40%; padding-left: 0px;">
+										<div class="col">
+											<!-- <form action="/api/updateCustomTag/test" method="POST">
+												<input name="newTag" id="editCustomTag" class="form-control filess-textbox no-border" style="height: 38px !important; font-size: 13px; padding: 3px 15px;" placeholder="Custom tag" onkeypress="changeTag(this)">
+												<input type="submit" style="display: none"/>
+											</form> -->
+											<form onsubmit="return false;" method="POST">
+												<input name="newTag" id="editCustomTag" class="form-control filess-textbox no-border" style="height: 38px !important; font-size: 13px; padding: 3px 15px;" placeholder="Custom tag"/>
+												<input type="submit" style="display: none;" onclick="changeTag()"/>
+											</form>
+										</div>
+									</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <!-- <form method="POST" enctype="multipart/form-data">
+                            <input type="text" id="customTag" name="customTag" placeholder="Add a custom tag to your URLs, enter &quot;NONE&quot; to set to default" style="width: 500px">
+                            <input type="submit" name="submit" value="Apply">
+                        </form> -->
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div style="background-color: #393945; padding: 20px; border-radius: 5px;">
+                                <div class="row">
+                                    <div class="col">
+                                        <h6 style="font-family: 'Overpass', sans-serif; color: #99999f;">
+                                            <i class="fa fa-cloud" style="padding-right: 5px;"></i>
+                                            Storage
+                                        </h6>
+                                    </div>
+                                    {% if plan.storageSize < 1000 %}
+                                        <div class="col"><h6 style="font-family: 'Overpass', sans-serif; color: #99999f; text-align: right;">{{ (user.totalSize / 1000000)|round(2, 'floor') }} MB of {{ plan.storageSize }} MB</h6></div>
+                                    {% else %}
+                                        <div class="col"><h6 style="font-family: 'Overpass', sans-serif; color: #99999f; text-align: right;">{{ (user.totalSize / 1000000000)|round(4, 'floor') }} GB of {{ plan.storageSize // 1000 }} GB</h6></div>
+                                    {% endif %}
+                                </div>
+                                <br/>
+                                <div class="progress" style="background-color: #40424f; height: 25px;">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ (user.totalSize / (plan.storageSize * 1000000)) * 100 }}%; font-weight: bold; color: #282832; font-size: 12px; background-color:#52e3c2; " aria-valuenow="{{ user.totalSize }}" aria-valuemin="0" aria-valuemax="{{ plan.storageSize * 1000000 }}">
+                                    {% if (user.totalSize / (plan.storageSize * 1000000)) * 100 >= 10.0 %}
+                                        {{ ((user.totalSize / (plan.storageSize * 1000000)) * 100)|round(2, 'floor') }}%
+                                    {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="delete_modal" tabindex="-1" role="dialog" aria-labelledby="delete_modal" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content" style="background-color: #32323e;">
+                                <div class="modal-header border-bottom-0" style="background-color: #212529;">
+                                    <h5 class="modal-title" style="font-family: 'Overpass', sans-serif; color: #99999f;" id="exampleModalLabel">DELETE ACCOUNT?</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div style="padding: 1rem">
+                                    <div style="font-family: 'Overpass', sans-serif; color: #99999f;">
+                                        <p>Are you sure you want to delete your Account?
+                                        This permanently deletes all of your files and removes access <b style="color: red;">forever</b>.</p>
+                                        <a style="cursor: pointer; margin: auto;" href="/deleteAccount">
+                                            <i class="bi bi-check2" style="color: #99999f; padding: 5px; margin-left: 5px; font-size: 20px;"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-circle btn-md filess-fixed-button" style="background-color: #434350; color: #7a7a82;" data-toggle="modal" data-target="#accountModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16" style="margin: -0px 10px 10px -3px;">
+                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                        </svg>
+                    </button>
+                    <div class="modal fade" id="accountModal" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                            <div class="modal-content" style="background-color: #32323e;">
+                                <div id="accountModalAlertPlaceholder"></div>
+                                <div class="modal-header border-bottom-0" style="padding-bottom: 0px;">
+                                    <h5 class="modal-title" style="font-family: 'Overpass', sans-serif; color: #99999f;" id="exampleModalLabel">Account</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- <h5 class="modal-title" style="font-family: 'Overpass', sans-serif; color: #99999f;">Welcome {{ user.firstName }} {{ user.lastName }}!</h5> -->
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                                            <a class="nav-link active" id="v-pills-account-tab" data-toggle="pill" role="tab" aria-controls="v-pills-account" aria-selected="true" style="cursor: pointer">
+                                                <i class="bi bi-person-fill" style="margin-right: 3px;"></i>
+                                                Profile
+                                            </a>
+                                            <a class="nav-link" id="v-pills-settings-tab" data-toggle="pill" role="tab" aria-controls="v-pills-settings" aria-selected="false" style="cursor: pointer">
+                                                <i class="bi bi-gear-fill" style="margin-right: 3px;"></i>
+                                                Settings
+                                            </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-9">
+                                            <div class="tab-content" id="v-pills-tabContent">
+                                                <div class="tab-pane fade show active" id="v-pills-account" role="tabpanel" aria-labelledby="v-pills-account-tab">
+                                                    <div>
+                                                        <p class="filess-label">Email</p>
+                                                        <p class="filess-field">{{ user.email }}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="filess-label">Full Name</p>
+                                                        <p class="filess-field">{{ user.firstName }} {{ user.lastName }}</p>
+                                                    </div>
+                                                    <a class="editAccountInfo" id="editButton" style="color: #8A94A7; cursor: pointer;">Edit</a>
+                                                </div>
+                                                <form id="editAccountInfoForm" method="POST" style="display: none;">
+                                                    <div class="tab-pane fade show active" id="v-pills-account" role="tabpanel" aria-labelledby="v-pills-account-tab">
+                                                        <div>
+                                                            <p class="filess-label">Email</p>
+                                                            <p class="filess-field"><input type="text" id="email" class="filess-textbox no-border" style="border-radius: 5px; height: 1.2rem" value="{{user.email}}"/></p>
+                                                        </div>
+                                                        <div>
+                                                            <p class="filess-label">First Name</p>
+                                                            <p class="filess-field"><input type="text" id="fname" class="filess-textbox no-border" style="border-radius: 5px; height: 1.2rem" value="{{user.firstName}}"/></p>
+                                                        </div>
+                                                        <div>
+                                                            <p class="filess-label">Last Name</p>
+                                                            <p class="filess-field"><input type="text" id="lname" class="filess-textbox no-border" style="border-radius: 5px; height: 1.2rem" value="{{user.lastName}}"/></p>
+                                                        </div>
+                                                        <div>
+                                                            <p class="filess-label">Change Password</p>
+                                                            <p class="filess-field"><input type="password" id="pass1" class="filess-textbox no-border" style="border-radius: 5px; height: 1.2rem" placeholder="New password"/></p>
+                                                            <p class="filess-field"><input type="password" id="pass2" class="filess-textbox no-border" style="border-radius: 5px; height: 1.2rem" placeholder="New password again"/></p>
+                                                        </div>
+                                                        <a data-toggle="modal" data-target="#password_modal" style="cursor: pointer; margin: auto;">  <!-- keep href for cursor hover indication, UX choice -->
+                                                            <i class="bi bi-check2" style="color: #99999f; padding: 5px; margin-left: 5px; font-size: 20px;"></i>
+                                                        </a>
+                                                        <a class="editAccountInfo" style="cursor: pointer; margin: auto;">  <!-- keep href for cursor hover indication, UX choice -->
+                                                            <i class="bi bi-x-lg" style="color: #99999f; padding: 5px; margin-left: 5px; font-size: 17px; margin: auto;"></i>
+                                                        </a>
+                                                    </div>
+                                                </form>
+
+                                                <div class="tab-pane fade show active" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab" style="display: None;">
+                                                    <div>
+                                                        <p class="filess-label">Settings</p>
+                                                        <p class="filess-field">{{ user.email }}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="filess-label">Customize subdomain</p>
+                                                        <div class="filess-field" style="padding-bottom: 1rem;">
+                                                            <input id="editSubdomain" type=text placeholder="Enter a custom subdomain" class="filess-textbox no-border" value="{% if user.subdomain %}{{ user.subdomain }}{% endif %}" style="height: 2rem; border-radius: 4px; padding-left: 10px;" onkeypress="changeSubdomain(this)">
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p class="filess-label">Current plan</p>
+                                                        <p class="filess-field">Tier {{ plan.planId }} - <a data-toggle="modal" data-target="#pricing_plans_modal" style="cursor: pointer; margin: auto; color: #8A94A7; text-decoration: underline;">Change Plan</a></p>
+                                                    </div>
+                                                    {% if plan.planId > 1 %}
+                                                    <div>
+                                                        <p class="filess-label">Plan expiration</p>
+                                                        <p class="filess-field">{{ (plan.dateExpired|string).split()[0] }}</p>
+                                                    </div>
+                                                    {% endif %}
+													{# maybe for V2 <div>
+														<p class="filess-label">Theme</p>
+														<div style="display:flex;">
+															<div style="padding-right: 8px;">
+																<a id="darkMode" style="decoration:none; cursor: pointer;"><i class="bi bi-moon"></i></a>
+															</div>
+															<div>
+																<a id="lightMode" style="decoration:none; cursor; pointer;"><i class="bi bi-brightness-high"></i></a>
+															</div>
+														</div>
+													</div> #}
+                                                    <div style="padding-top: 1rem">
+                                                        <span style="float:left; padding-right: 5px">
+                                                            <a data-toggle="modal" data-target="#delete_modal" style="cursor: pointer; margin: auto; color: red;">  <!-- keep href for cursor hover indication, UX choice -->
+                                                                Delete Account
+                                                            </a>
+                                                        </span>
+														<span style="float:right"<p>V1.22.9</p></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="password_modal" tabindex="-1" role="dialog" aria-labelledby="password_modal" aria-hidden="true" data-backdrop="static">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content" style="background-color: #32323e;">
+                                <div id="passwordModalAlertPlaceholder"></div>
+                                <div class="modal-header border-bottom-0" style="background-color: #212529;">
+                                    <h5 class="modal-title" style="font-family: 'Overpass', sans-serif; color: #99999f;" id="exampleModalLabel">Update</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <input type="password" class="filess-textbox no-border" id="passwordVerification" placeholder="Please verify you password" onkeypress="checkPass(this)"/>
+                                <!--<button id="updateInfoButton">Submit</button>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="pricing_plans_modal" tabindex="-1" role="dialog" aria-labelledby="pricing_plans_modal" aria-hidden="true" data-backdrop="static">
+                    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+                        <div class="modal-content" style="background-color: #32323e;">
+                            <div class="modal-header border-bottom-0" style="background-color: #212529;">
+                                <h5 class="modal-title" style="font-family: 'Overpass', sans-serif; color: #99999f;" id="exampleModalLabel">Pricing</h5>
+                                <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <section class="mbr-section--bg-adapted mbr-section--relative" id="pricing-table1-3" data-rv-view="0">
+                                <div class="pricing" id="pricing" style="padding-top: 40px; padding-bottom: 40px;">
+                                    <div class="pricing_container">
+                                        <div class="section-head-lite pricing_text-center pricing_col-md-8 pricing_col-md-offset-2 space80">
+                                            <h1 class="mbr-title-font">Get started in the Cloud</h1>
+                                            <p>AWS cloud storage for all your static files, all in one place, all for one price</p>
+                                        </div>
+                                        <div class="pricing_row pricing1">
+                                            <div class="pricing_col-md-12">
+
+                                                <!-- Pricing Plan - 1 -->
+                                                <div id="pricingPlan1" class="pricing_col-sm-3 price-styles" style="display: block;">
+                                                    <div class="pricing__item price-four-el" data-hover="">
+                                                        <h3 class="pricing__title mbr-title-font mbr-primary-color">TIER 1</h3>
+                                                        <p class="pricing__sentence">A great introduction to Filess</p>
+                                                        <div class="pricing__price mbr-title-font">
+                                                            <span class="pricing__currency">$</span>
+                                                            <span>0.00</span>
+                                                            <span class="pricing__period">/ month</span>
+                                                        </div>
+                                                        <div>
+                                                            <ul class="pricing__feature-list mbr-text-font">
+                                                                <li class="pricing__feature">100 MB storage</li>
+                                                                <li class="pricing__feature">Custom tags</li>
+                                                                <li class="pricing__feature">Completely FREE</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="breakspace"></div>
+                                                <!-- Pricing Plan - 2 -->
+                                                <div id="pricingPlan2" class="pricing_col-sm-3 price-styles" style="display: block;">
+                                                    <div class="pricing__item price-four-el">
+                                                        <h3 class="pricing__title mbr-title-font mbr-primary-color">TIER 2</h3>
+                                                        <p class="pricing__sentence">More you</p>
+                                                        <div class="pricing__price mbr-title-font">
+                                                            <span class="pricing__currency">$</span>
+                                                            <span>0.99</span>
+                                                            <span class="pricing__period">/ month</span>
+                                                        </div>
+                                                        <div>
+                                                            <ul class="pricing__feature-list mbr-text-font">
+                                                                <li class="pricing__feature">500 MB storage</li>
+                                                                <li class="pricing__feature">Custom tags</li>
+                                                                <li class="pricing__feature">More space</li>
+                                                            </ul>
+                                                        </div>
+                                                        {% if plan.planId != 2 %}
+                                                            <div><button id="tier2_signup" class="btn mbr-title-font btn-primary is-primary" style="background-color: #4caf50;">Sign Up</button></div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="breakspace"></div><div class="breakspace"></div>
+                                                <!-- Pricing Plan - 3 -->
+                                                <div id="pricingPlan3" class="pricing_col-sm-3 price-styles" data-hover="BEST VALUE" style="display: block;"><div class="popular mbr-title-font price-four-el"><strong>BEST VALUE</strong></div>
+                                                    <div class="pricing__item pricing__item__popular price-four-el">
+                                                        <h3 class="pricing__title mbr-title-font mbr-primary-color" id="tier3Text">TIER 3</h3>
+                                                        <p class="pricing__sentence">Even more you</p>
+                                                        <div class="pricing__price mbr-title-font">
+                                                            <span class="pricing__currency">$</span>
+                                                            <span>3.99</span>
+                                                            <span class="pricing__period">/ month</span>
+                                                        </div>
+                                                        <div>
+                                                            <ul class="pricing__feature-list mbr-text-font">
+                                                                <li class="pricing__feature">5 GB storage</li>
+                                                                <li class="pricing__feature">Custom tags</li>
+                                                                <li class="pricing__feature">Unlimited subdomains</li>
+                                                            </ul>
+                                                        </div>
+                                                        {% if plan.planId != 3 %}
+                                                            <div><a id="tier3_signup" class="btn mbr-title-font btn-primary" style="background-color: #4caf50;">Sign Up</a></div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="breakspace"></div>
+                                                 <!-- Pricing Plan - 4 -->
+                                                <div id="pricingPlan4" class="pricing_col-sm-3 price-styles" style="display: block;">
+                                                    <div class="pricing__item price-four-el">
+                                                        <h3 class="pricing__title mbr-title-font mbr-primary-color">TIER 4</h3>
+                                                        <p class="pricing__sentence">Huge storage space</p>
+                                                        <div class="pricing__price mbr-title-font">
+                                                            <span class="pricing__currency">$</span>
+                                                            <span>6.99</span>
+                                                            <span class="pricing__period">/ month</span>
+                                                        </div>
+                                                        <div>
+                                                            <ul class="pricing__feature-list mbr-text-font">
+                                                                <li class="pricing__feature">50 GB of space</li>
+                                                                <li class="pricing__feature">Custom tags</li>
+                                                                <li class="pricing__feature">Unlimited subdomains</li>
+                                                            </ul>
+                                                        </div>
+                                                        {% if plan.planId != 4 %}
+                                                            <div><a id="tier4_signup" class="btn mbr-title-font btn-primary" style="background-color: #4caf50;">Sign Up</a></div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+	  	    </div>
+	    </div>
+	</div>
+    <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="footer-copyright" style="padding: 0rem 4rem;">&copy; 2022 Filess, all rights reserved</div>
+            <ul class="footer-links list-reset" style="padding: 0rem 4rem; list-style: none">
+
+                <li>
+                    <a href="https://mailto:filess.org@gmail.com">Contact (filess.org@gmail.com)</a>
+                </li>
+                <li>
+                    <a href="/">Landing</a>
+                </li>
+                <li>
+                    <a href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </footer>
+{% endblock %}

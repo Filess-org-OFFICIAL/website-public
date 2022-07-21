@@ -1,0 +1,35 @@
+{% extends "layout.html.j2" %}
+
+{% set title = 'Login' %}
+
+{% block content %}
+    <div class="modal modal-signin d-block" style="background-color: transparent !important" tabindex="-1" role="dialog" id="modalSignin">
+        <div class="modal-dialog modal-dialog-centered" style="background-color: transparent !important" role="document">
+            <div class="modal-content no-border" style="background-color: transparent !important">
+                <div class="modal-header p-5 pb-4 border-bottom-0">
+                    <h2 class="mb-0">Sign in. (Beta)</h2>
+                </div>
+
+                <div class="modal-body p-5 pt-0">
+                    <form action="{{ request.full_path }}" method="post">
+
+                    <div class="form-group">
+                        <input name="email" class="form-control filess-textbox mb-3 no-border" placeholder="Your email">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password" class="form-control filess-textbox mb-3 no-border" placeholder="Password">
+                    </div>
+
+                    <button class="w-100 mb-2 btn btn-lg rounded-4 filess-button" type="submit">Sign in</button>
+                    <a class="filess-link" href="/reset">Forgot Password</a>
+
+                    <div>
+                        <hr/>
+                        <p style="font-weight: 300;">New to Filess? <a href="/signup" class="filess-link">Sign up!</a></p>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
