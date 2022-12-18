@@ -23,7 +23,7 @@ video_types = ['mp4', 'mov', 'wmv', 'avi']
 plan_size = {1: 100, 2: 500, 3: 5000, 4: 50000}
 plan_tag = {1: 1, 2: 1, 3: 1, 4: 1}
 plan_subdomain = {1: 0, 2: 0, 3: 1, 4: 1}
-tier_translate = {199: 2, 699: 3, 1499: 4}  # first 3 digits for ease
+tier_translate = {99: 2, 399: 3, 699: 4}  # first 3 digits for ease
 beta = False
 
 
@@ -51,6 +51,7 @@ def bytes_convert(bytes):  # convert bytes to readable string
         return str(round(bytes / 1000000000, 2)) + ' GB'
 
 
+# Comment out for local testing
 @app.before_request
 def before_request():
     if not request.is_secure and 'stripe' not in request.url:
@@ -123,6 +124,7 @@ def login():
             flash('Invalid e-mail or password', 'danger')
         else:
             print(user.check_password(password))
+            print(user.userId)
             login_user(user, remember=True)
 
             # If a user accesses a page protected by @login_required a parameter, 'next' will be passed
@@ -167,11 +169,29 @@ def signup():
         elif beta:
             flash('Account creation has been turned off during the beta state')
         else:
-            code = random.randint(100000, 1000000)  # generate random 6 digit code
-            encoded = code  # encoding removed from public repo for security reasons
-            send(email, 'Your Filess verification code', 'Your code: ' + str(code))  # send code in email to user
-            data = ' '.join([email, fname, lname, password, encoded])
-            return render_template('verify.html.j2', data=data)
+            # Email verification via OAuth2 deprecated
+            # code = random.randint(100000, 1000000)  # generate random 6 digit code
+            # encoded = str(bin(code))[::-1]  # simple encoding for now (backwards bin. rep.)
+            # send(email, 'Your Filess verification code', 'Your code: ' + str(code))  # send code in email to user
+            # data = ' '.join([email, fname, lname, password, encoded])
+            # return render_template('verify.html.j2', data=data)
+
+            # add new user to db
+            db.session.add(User(email=email, firstName=fname, lastName=lname))
+            db.session.commit()
+
+            user = User.query.filter_by(email=email).first()
+            user.set_password(password)
+            db.session.commit()
+
+            login_user(User.query.filter_by(email=email).first(), remember=True)
+
+            # Tier 1 plan automatically
+            db.session.add(Plan(planId=1, userId=current_user.userId, storageSize=plan_size[1], tags=plan_tag[1], subdomains=plan_subdomain[1], dateExpired=(date.today() + relativedelta(months=+1))))
+            db.session.commit()
+            print(Plan.query.filter_by(userId=current_user.userId).first().storageSize)
+
+            return redirect(url_for('dashboard'))
 
     return render_template('signup.html.j2')
 
@@ -182,7 +202,7 @@ def verify_code():
     # email, fname, lname, password, code, input_code = str(data[0])[2:-1], str(data[1])[2:-1], str(data[2])[2:-1], str(data[3])[2:-1], data[4], data[5]
     email, fname, lname, password, code, input_code = data[0].decode('utf-8'), data[1].decode('utf-8'), data[2].decode('utf-8'), data[3].decode('utf-8'), data[4], data[5]
     # verify code
-    if int(code) != int(input_code):  # check code
+    if int(str(code)[::-1][3:-2], 2) != int(input_code):  # check code
         return jsonify({'error': 'Codes do not match'})  # TODO: get flash to work
 
     print('match!', email)
@@ -225,11 +245,11 @@ def logout():  # logout
     return redirect(url_for('login'))
 
 
-# TODO: send reset password to email
 # NOT SUPPORTED DURING BETA PHASE
 @app.route('/reset', methods=["GET", "POST"])
 def reset():  # forgot email or password, reset
     if request.method == "POST":
+        return render_template('reset.html.j2')
         email = request.data.decode("utf-8")
         if len(User.query.filter_by(email=email).all()) == 0:
             flash('Invalid email address', 'danger')
@@ -263,6 +283,33 @@ def show_asset(user_id, file_name, tag=None):
         return render_template('404.html'), 404
 
     file_type = asset.fileName.split('.')[-1].lower()
+    if asset.fileType == 'image':
+        return redirect(aws_pointer)
+    elif asset.fileType == 'video':
+        resp = Response(status=302, content_type='video/' + file_type)
+        resp.headers.add('Accept-Ranges', 'bytes')
+        resp.headers.add('Content-Length', asset.fileBytes)
+        resp.headers.add('Content-Range', 'bytes {0}-{1}/{2}'.format(0, asset.fileBytes - 1, asset.fileBytes))
+        resp.headers.add('Location', aws_pointer)
+        return resp
+    else:
+        return redirect(aws_pointer)
+
+
+@app.route('/<file_name>', subdomain="<custom_subdomain>")  # url contains user id and filename
+@app.route('/<tag>/<file_name>', subdomain="<custom_subdomain>")  # if user has custom tag
+def testing(custom_subdomain, file_name, tag=None):
+    user = User.query.filter_by(subdomain=custom_subdomain).first()
+    if not user:
+        return render_template('404.html'), 404
+    user_id = str(user.userId)
+    asset = Files.query.filter_by(userId=user_id, fileName=file_name).first()
+    if not asset:
+        return render_template('404.html'), 404
+
+    aws_pointer = 'https://filessstorage.s3.us-east-1.amazonaws.com/' + user_id + '/' + file_name  # public in S3
+    file_type = asset.fileName.split('.')[-1].lower()
+
     if asset.fileType == 'image':
         return redirect(aws_pointer)
     elif asset.fileType == 'video':
@@ -340,7 +387,7 @@ def delete_account():
 @app.route('/Admin')
 @login_required
 def admin_page():  # info on all users, users' files, total storage and files, while preserving integrity
-    if current_user.userId == 8:  # if user is logged in as Admin
+    if current_user.userId == 2:  # if user is logged in as Admin
         files = []
         total_storage = 0
         total_files = 0
@@ -518,15 +565,13 @@ def update_custom_subdomain():
                             "name": "Subdomain: " + subdomain,
                             "quantity": 1,
                             "currency": "usd",
-                            "amount": "069",
+                            "amount": "059",
                         }
                     ]
                 )
 
                 # stripe_checkout_url = 'https://checkout.stripe.com/pay/' + checkout_session["id"]
-                # print(stripe_checkout_url)
-                # return redirect("https://monkeytype.com")
-                return jsonify({"sessionId": checkout_session["id"]})
+                return jsonify({'sessionId': checkout_session["id"]})
 
             user = User.query.filter_by(userId=current_user.userId).first()
             user.subdomain = subdomain
@@ -670,7 +715,7 @@ def stripe_webhook():
         user_id = int(re.findall(r'"client_reference_id": ".+"', data)[0].split()[-1][1:-1])
         print(cost, user_id)
 
-        if cost == 99:
+        if cost == 59:
             user = User.query.filter_by(userId=user_id).first()
             user.subdomain = re.findall(r'"subdomain": ".+"', data)[0].split()[-1][1:-1]
             db.session.commit()
@@ -704,12 +749,11 @@ def page_not_found(e):  # 404 page error handler
     return render_template('500.html'), 500
 
 
-# Any and all testing, feel free to use
-@app.route('/DELETEALLROWSINFILESTABLE')  # deletes all user's assets
-def test():
-    Files.query.filter_by(userId=current_user.userId).delete()
-    db.session.commit()
-    user = User.query.filter_by(userId=current_user.userId).first()
-    user.totalSize = 0
-    db.session.commit()
-    return redirect(url_for('dashboard'))
+# @app.route('/query')  # query tests
+# def test():
+#     user = Plan.query.filter_by(userId=3).first()
+#     user.planId = 4
+#     user.dateExpired = date.today() + relativedelta(years=+77)
+#     db.session.commit()
+
+#     return redirect(url_for('dashboard'))

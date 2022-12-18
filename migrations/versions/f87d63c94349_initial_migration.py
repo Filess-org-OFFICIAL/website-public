@@ -1,17 +1,17 @@
-"""empty message
+"""Initial migration
 
-Revision ID: 12ca255b3992
-Revises: 1fbc49e9ca5a
-Create Date: 2022-06-26 23:38:30.280073
+Revision ID: f87d63c94349
+Revises: 
+Create Date: 2022-12-17 18:18:27.356999
 
 """
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '12ca255b3992'
-down_revision = '1fbc49e9ca5a'
+revision = 'f87d63c94349'
+down_revision = None
 branch_labels = None
 depends_on = None
 
@@ -41,17 +41,21 @@ def upgrade():
     op.create_index(op.f('ix_files_tag'), 'files', ['tag'], unique=False)
     op.create_index(op.f('ix_files_userId'), 'files', ['userId'], unique=False)
     op.create_table('plan',
-    sa.Column('planId', sa.Integer(), nullable=False),
+    sa.Column('ID', sa.Integer(), nullable=False),
+    sa.Column('planId', sa.Integer(), nullable=True),
     sa.Column('userId', sa.Integer(), nullable=True),
-    sa.Column('storageSize', sa.Integer(), nullable=True),
+    sa.Column('storageSize', mysql.BIGINT(), nullable=True),
     sa.Column('tags', sa.Integer(), nullable=True),
     sa.Column('subdomains', sa.Integer(), nullable=True),
     sa.Column('dateCreated', sa.DateTime(), nullable=True),
     sa.Column('dateExpired', sa.DateTime(), nullable=True),
-    sa.PrimaryKeyConstraint('planId')
+    sa.Column('spent', sa.String(length=320), nullable=True),
+    sa.PrimaryKeyConstraint('ID')
     )
     op.create_index(op.f('ix_plan_dateCreated'), 'plan', ['dateCreated'], unique=False)
     op.create_index(op.f('ix_plan_dateExpired'), 'plan', ['dateExpired'], unique=False)
+    op.create_index(op.f('ix_plan_planId'), 'plan', ['planId'], unique=False)
+    op.create_index(op.f('ix_plan_spent'), 'plan', ['spent'], unique=False)
     op.create_index(op.f('ix_plan_storageSize'), 'plan', ['storageSize'], unique=False)
     op.create_index(op.f('ix_plan_subdomains'), 'plan', ['subdomains'], unique=False)
     op.create_index(op.f('ix_plan_tags'), 'plan', ['tags'], unique=False)
@@ -90,6 +94,8 @@ def downgrade():
     op.drop_index(op.f('ix_plan_tags'), table_name='plan')
     op.drop_index(op.f('ix_plan_subdomains'), table_name='plan')
     op.drop_index(op.f('ix_plan_storageSize'), table_name='plan')
+    op.drop_index(op.f('ix_plan_spent'), table_name='plan')
+    op.drop_index(op.f('ix_plan_planId'), table_name='plan')
     op.drop_index(op.f('ix_plan_dateExpired'), table_name='plan')
     op.drop_index(op.f('ix_plan_dateCreated'), table_name='plan')
     op.drop_table('plan')

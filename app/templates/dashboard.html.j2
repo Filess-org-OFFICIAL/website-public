@@ -169,21 +169,21 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal fade" id="delete_modal" tabindex="-1" role="dialog" aria-labelledby="delete_modal" aria-hidden="true" data-backdrop="static">
-                        <div class="modal-dialog modal-dialog-centered" role="document">
-                            <div class="modal-content" style="background-color: #32323e;">
-                                <div class="modal-header border-bottom-0" style="background-color: #212529;">
-                                    <h5 class="modal-title" style="font-family: 'Overpass', sans-serif; color: #99999f;" id="exampleModalLabel">DELETE ACCOUNT?</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div style="padding: 1rem">
-                                    <div style="font-family: 'Overpass', sans-serif; color: #99999f;">
-                                        <p>Are you sure you want to delete your Account?
-                                        This permanently deletes all of your files and removes access <b style="color: red;">forever</b>.</p>
-                                        <a style="cursor: pointer; margin: auto;" href="/deleteAccount">
-                                            <i class="bi bi-check2" style="color: #99999f; padding: 5px; margin-left: 5px; font-size: 20px;"></i>
-                                        </a>
+                        <div class="modal fade" id="delete_modal" tabindex="-1" role="dialog" aria-labelledby="delete_modal" aria-hidden="true" data-backdrop="static">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content" style="background-color: #32323e;">
+                                    <div class="modal-header border-bottom-0" style="background-color: #212529;">
+                                        <h5 class="modal-title" style="font-family: 'Overpass', sans-serif; color: #99999f;" id="exampleModalLabel">DELETE ACCOUNT?</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div style="padding: 1rem">
+                                        <div style="font-family: 'Overpass', sans-serif; color: #99999f;">
+                                            <p>Are you sure you want to delete your Account?
+                                            This permanently deletes all of your files and removes access <b style="color: red;">forever</b>.</p>
+                                            <a style="cursor: pointer; margin: auto;" href="/deleteAccount">
+                                                <i class="bi bi-check2" style="color: #99999f; padding: 5px; margin-left: 5px; font-size: 20px;"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -297,7 +297,7 @@
                                                                 Delete Account
                                                             </a>
                                                         </span>
-														<span style="float:right"<p>V1.22.9</p></span>
+														<span style="float:right"<p>V1.24.6</p></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -378,6 +378,7 @@
                                                         {% if plan.planId != 2 %}
                                                             <div><button id="tier2_signup" class="btn mbr-title-font btn-primary is-primary" style="background-color: #4caf50;">Sign Up</button></div>
                                                         {% endif %}
+                                                            <div hidden><button id="tier2_signup" class="btn mbr-title-font btn-primary is-primary" style="background-color: #4caf50;">Sign Up</button></div>
                                                     </div>
                                                 </div>
                                                 <div class="breakspace"></div><div class="breakspace"></div>
@@ -401,6 +402,7 @@
                                                         {% if plan.planId != 3 %}
                                                             <div><a id="tier3_signup" class="btn mbr-title-font btn-primary" style="background-color: #4caf50;">Sign Up</a></div>
                                                         {% endif %}
+                                                        <div hidden><a id="tier3_signup" class="btn mbr-title-font btn-primary" style="background-color: #4caf50;">Sign Up</a></div>
                                                     </div>
                                                 </div>
                                                 <div class="breakspace"></div>
@@ -424,6 +426,7 @@
                                                         {% if plan.planId != 4 %}
                                                             <div><a id="tier4_signup" class="btn mbr-title-font btn-primary" style="background-color: #4caf50;">Sign Up</a></div>
                                                         {% endif %}
+                                                        <div hidden><a id="tier4_signup" class="btn mbr-title-font btn-primary" style="background-color: #4caf50;">Sign Up</a></div>
                                                     </div>
                                                 </div>
                                             </div>
